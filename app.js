@@ -47,7 +47,7 @@ function doLogin(){
   localStorage.setItem('sesion', JSON.stringify(found));
   if(found.rol === 'admin') window.location = 'admin.html'; else window.location = 'alumno.html';
 }
-function logout(){ localStorage.removeItem('sesion'); window.location = 'login.html' || 'index.html'; }
+function logout(){ localStorage.removeItem('sesion'); window.location = 'index.html' || 'index.html'; }
 
 // ---------- Admin: Tabla alumnos (render) ----------
 function renderAlumnos(){
@@ -341,7 +341,7 @@ function renderAlumnoRegistro(){
 function renderAlumnoPage(){
   if(!document.getElementById('perfilAlumno')) return;
   const ses = JSON.parse(localStorage.getItem('sesion') || 'null');
-  if(!ses) { window.location = 'login.html'; return; }
+  if(!ses) { window.location = 'index.html'; return; }
   const id = ses.id;
   const alumnos = getAlumnos();
   const a = alumnos.find(x=>x.id==id);
@@ -400,6 +400,6 @@ if(document.getElementById('tablaAlumnos')) {
 if(document.getElementById('perfilAlumno')) {
   // ensure session valid
   const ses = JSON.parse(localStorage.getItem('sesion') || 'null');
-  if(!ses){ window.location='login.html'; }
+  if(!ses){ window.location='index.html'; }
   renderAlumnoPage();
 }

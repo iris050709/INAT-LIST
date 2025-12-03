@@ -405,35 +405,36 @@ if(document.getElementById('perfilAlumno')) {
 }
 
 function exportMensualidadesExcel() {
-    let pagosObj = JSON.parse(localStorage.getItem("pagos")) || {};
+    const pagosObj = JSON.parse(localStorage.getItem("pagos")) || {};
 
-    // Convertir el objeto en un array plano
-    let lista = [];
+    // Convertir objeto → arreglo plano
+    let rows = [];
 
     Object.keys(pagosObj).forEach(id => {
-        pagosObj[id].forEach(p => {
-            lista.push({
+        pagosObj[id].forEach(pago => {
+            rows.push({
                 alumnoId: id,
-                mes: p.mes,
-                monto: p.monto,
-                estado: p.estado,
-                fecha: p.fecha || "-"
+                mes: pago.mes,
+                monto: pago.monto,
+                estado: pago.estado,
+                fecha: pago.fecha
             });
         });
     });
 
-    if (lista.length === 0) {
-        alert("No hay mensualidades para exportar.");
+    if (rows.length === 0) {
+        alert("No hay datos de mensualidades para exportar.");
         return;
     }
 
-    // Convertir array → hoja Excel
-    const ws = XLSX.utils.json_to_sheet(lista);
+    // Convertir a hoja Excel
+    const ws = XLSX.utils.json_to_sheet(rows);
 
     // Crear libro Excel
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Mensualidades");
 
+    // Descargar archivo
     XLSX.writeFile(wb, "mensualidades_inat.xlsx");
 }
 

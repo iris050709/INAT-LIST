@@ -403,3 +403,40 @@ if(document.getElementById('perfilAlumno')) {
   if(!ses){ window.location='index.html'; }
   renderAlumnoPage();
 }
+
+function exportMensualidadesExcel() {
+    let data = JSON.parse(localStorage.getItem("pagos")) || [];
+
+    if (data.length === 0) {
+        alert("No hay datos de mensualidades para exportar.");
+        return;
+    }
+
+    // Convertir a hoja Excel
+    const ws = XLSX.utils.json_to_sheet(data);
+
+    // Crear libro Excel
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Mensualidades");
+
+    // Descargar archivo
+    XLSX.writeFile(wb, "mensualidades_inat.xlsx");
+}
+
+function exportAsistenciasExcel() {
+    let matriz = JSON.parse(localStorage.getItem("asistencias")) || [];
+
+    if (matriz.length === 0) {
+        alert("No hay datos de asistencias.");
+        return;
+    }
+
+    // Convertir matriz → hoja Excel
+    const ws = XLSX.utils.aoa_to_sheet(matriz);
+
+    // Crear libro Excel
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Asistencias");
+
+    XLSX.writeFile(wb, "asistencias_inat.xlsx");
+}

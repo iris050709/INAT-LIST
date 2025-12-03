@@ -446,10 +446,13 @@ function exportAsistenciasExcel() {
     Object.keys(asistObj).forEach(id => {
         asistObj[id].forEach(fecha => {
 
-            // Convertir a Date sin UTC
+            // Convertir a Date sin que se convierta a UTC
             let d = new Date(fecha + "T00:00:00");
-            d.setDate(d.getDate() - 1); // <-- RESTAR 1 DÍA
 
+            // RESTAR 1 DÍA
+            d.setDate(d.getDate() - 1);
+
+            // Reconstruir fecha corregida en formato YYYY-MM-DD
             let corregida =
                 d.getFullYear() + "-" +
                 String(d.getMonth() + 1).padStart(2, "0") + "-" +

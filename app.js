@@ -441,21 +441,22 @@ function exportMensualidadesExcel() {
 function exportAsistenciasExcel() {
     let asistObj = JSON.parse(localStorage.getItem("asistencias")) || {};
 
-    // Construir array de arrays (primera fila = encabezados)
     const rows = [["alumnoId", "fecha"]];
 
     Object.keys(asistObj).forEach(id => {
         asistObj[id].forEach(fecha => {
-            // Restar 1 día aquí si quieres (según lo pediste)
-            let d = new Date(fecha + "T00:00:00");
+
+            // ←← CORRECCIÓN: restar 1 día al exportar
+            let d = new Date(fecha);
             d.setDate(d.getDate() - 1);
-            let corregida =
+
+            let fechaCorregida = 
                 d.getFullYear() + "-" +
                 String(d.getMonth() + 1).padStart(2, "0") + "-" +
                 String(d.getDate()).padStart(2, "0");
 
-            // Añadir fila: mantener fecha como string para que Excel no la convierta
-            rows.push([String(id), corregida]);
+            // ← Forzar texto para que Excel NO cambie la fecha
+            rows.push([String(id), fechaCorregida]);
         });
     });
 
@@ -464,11 +465,10 @@ function exportAsistenciasExcel() {
         return;
     }
 
-    // Usar aoa_to_sheet para respetar tipos (strings)
     const ws = XLSX.utils.aoa_to_sheet(rows);
-
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Asistencias");
 
     XLSX.writeFile(wb, "asistencias_inat.xlsx");
 }
+

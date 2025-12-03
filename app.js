@@ -447,7 +447,7 @@ function exportAsistenciasExcel() {
         asistObj[id].forEach(fecha => {
             lista.push({
                 alumnoId: id,
-                fecha: fecha
+                fecha: String(fecha)   // <-- evitar conversión automática a UTC
             });
         });
     });
@@ -458,10 +458,8 @@ function exportAsistenciasExcel() {
     }
 
     const ws = XLSX.utils.json_to_sheet(lista);
-
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Asistencias");
 
     XLSX.writeFile(wb, "asistencias_inat.xlsx");
 }
-

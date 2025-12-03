@@ -439,36 +439,52 @@ function exportMensualidadesExcel() {
 }
 
 function exportAsistenciasExcel() {
-    let asistObj = JSON.parse(localStorage.getItem("asistencias")) || {};
+  let asistObj = JSON.parse(localStorage.getItem("asistencias")) || {};
 
-    const rows = [["alumnoId", "fecha"]];
+  const rows = [["alumnoId", "fecha"]];
 
-    Object.keys(asistObj).forEach(id => {
-        asistObj[id].forEach(fecha => {
+  Object.keys(asistObj).forEach(id => {
+    (asistObj[id] || []).forEach(fechaStr => {
+      // --- Parsear la fecha YYYY-MM-DD sin usar new Date(fechaStr) ---
+      const parts = String(fechaStr).split('-');
+      if (parts.length !== 3) return; // saltar si no es YYYY-MM-DD
 
-            // ←← CORRECCIÓN: restar 1 día al exportar
-            let d = new Date(fecha);
-            d.setDate(d.getDate() - 1);
+      const y = Number(parts[0]), m = Number(parts[1]) - 1, d = Number(parts[2]);
+      const dt = new Date(y, m, d);        // fecha en zona local sin conversiones UTC
+      dt.setDate(dt.getDate() - 1);        // RESTAR 1 DIA
 
-            let fechaCorregida = 
-                d.getFullYear() + "-" +
-                String(d.getMonth() + 1).padStart(2, "0") + "-" +
-                String(d.getDate()).padStart(2, "0");
+      // Formato deseado (puedes cambiar a yyyy-mm-dd o dd/mm/yyyy)
+      const corregida_yyyy_mm_dd =
+        dt.getFullYear() + "-" +
+        String(dt.getMonth() + 1).padStart(2, "0") + "-" +
+        String(dt.getDate()).padStart(2, "0");
 
-            // ← Forzar texto para que Excel NO cambie la fecha
-            rows.push([String(id), fechaCorregida]);
-        });
+      const corregida_dd_mm_yyyy =
+        String(dt.getDate()).padStart(2, "0") + "/" +
+        String(dt.getMonth() + 1).padStart(2, "0") + "/" +
+        dt.getFullYear();
+
+      // Forzar texto para que Excel NO reconvierta la cadena a fecha
+      const celdaTexto = "'" + corregida_yyyy_mm_dd; // el apostrofo NO se muestra en Excel, pero obliga a texto
+
+      // Añadir fila: usar ID y la celda forzada como texto
+      rows.push([String(id), celdaTexto]);
+
+      // DEBUG: mostrar en la consola original -> corregida
+      console.log("Exportar asistencia:", id, "original:", fechaStr, "-> corregida:", corregida_yyyy_mm_dd);
     });
+  });
 
-    if (rows.length === 1) {
-        alert("No hay asistencias para exportar.");
-        return;
-    }
+  if (rows.length === 1) {
+    alert("No hay asistencias para exportar.");
+    return;
+  }
 
-    const ws = XLSX.utils.aoa_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Asistencias");
+  // Usar aoa_to_sheet para respetar los strings tal cual
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Asistencias");
 
-    XLSX.writeFile(wb, "asistencias_inat.xlsx");
+  // Descargar
+  XLSX.writeFile(wb, "asistencias_inat.xlsx");
 }
-

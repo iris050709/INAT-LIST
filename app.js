@@ -405,38 +405,62 @@ if(document.getElementById('perfilAlumno')) {
 }
 
 function exportMensualidadesExcel() {
-    let data = JSON.parse(localStorage.getItem("pagos")) || [];
+    let pagosObj = JSON.parse(localStorage.getItem("pagos")) || {};
 
-    if (data.length === 0) {
-        alert("No hay datos de mensualidades para exportar.");
+    // Convertir el objeto en un array plano
+    let lista = [];
+
+    Object.keys(pagosObj).forEach(id => {
+        pagosObj[id].forEach(p => {
+            lista.push({
+                alumnoId: id,
+                mes: p.mes,
+                monto: p.monto,
+                estado: p.estado,
+                fecha: p.fecha || "-"
+            });
+        });
+    });
+
+    if (lista.length === 0) {
+        alert("No hay mensualidades para exportar.");
         return;
     }
 
-    // Convertir a hoja Excel
-    const ws = XLSX.utils.json_to_sheet(data);
+    // Convertir array → hoja Excel
+    const ws = XLSX.utils.json_to_sheet(lista);
 
     // Crear libro Excel
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Mensualidades");
 
-    // Descargar archivo
     XLSX.writeFile(wb, "mensualidades_inat.xlsx");
 }
 
 function exportAsistenciasExcel() {
-    let matriz = JSON.parse(localStorage.getItem("asistencias")) || [];
+    let asistObj = JSON.parse(localStorage.getItem("asistencias")) || {};
 
-    if (matriz.length === 0) {
-        alert("No hay datos de asistencias.");
+    let lista = [];
+
+    Object.keys(asistObj).forEach(id => {
+        asistObj[id].forEach(fecha => {
+            lista.push({
+                alumnoId: id,
+                fecha: fecha
+            });
+        });
+    });
+
+    if (lista.length === 0) {
+        alert("No hay asistencias para exportar.");
         return;
     }
 
-    // Convertir matriz → hoja Excel
-    const ws = XLSX.utils.aoa_to_sheet(matriz);
+    const ws = XLSX.utils.json_to_sheet(lista);
 
-    // Crear libro Excel
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Asistencias");
 
     XLSX.writeFile(wb, "asistencias_inat.xlsx");
 }
+

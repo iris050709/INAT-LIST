@@ -405,86 +405,38 @@ if(document.getElementById('perfilAlumno')) {
 }
 
 function exportMensualidadesExcel() {
-    const pagosObj = JSON.parse(localStorage.getItem("pagos")) || {};
+  const pagosObj = JSON.parse(localStorage.getItem("pagos")) || {};
+  const alumnos = getAlumnos(); // usa la función existente
+  const nombrePorId = {};
+  alumnos.forEach(a => { nombrePorId[a.id] = a.nombre; });
 
-    // Convertir objeto → arreglo plano
-    let rows = [];
+  // convertir objeto -> array plano con nombre del alumno
+  const rows = [];
 
-    Object.keys(pagosObj).forEach(id => {
-        pagosObj[id].forEach(pago => {
-            rows.push({
-                alumnoId: id,
-                mes: pago.mes,
-                monto: pago.monto,
-                estado: pago.estado,
-                fecha: pago.fecha
-            });
-        });
-    });
-
-    if (rows.length === 0) {
-        alert("No hay datos de mensualidades para exportar.");
-        return;
-    }
-
-    // Convertir a hoja Excel
-    const ws = XLSX.utils.json_to_sheet(rows);
-
-    // Crear libro Excel
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Mensualidades");
-
-    // Descargar archivo
-    XLSX.writeFile(wb, "mensualidades_inat.xlsx");
-}
-
-function exportAsistenciasExcel() {
-  let asistObj = JSON.parse(localStorage.getItem("asistencias")) || {};
-
-  const rows = [["alumnoId", "fecha"]];
-
-  Object.keys(asistObj).forEach(id => {
-    (asistObj[id] || []).forEach(fechaStr => {
-      // --- Parsear la fecha YYYY-MM-DD sin usar new Date(fechaStr) ---
-      const parts = String(fechaStr).split('-');
-      if (parts.length !== 3) return; // saltar si no es YYYY-MM-DD
-
-      const y = Number(parts[0]), m = Number(parts[1]) - 1, d = Number(parts[2]);
-      const dt = new Date(y, m, d);        // fecha en zona local sin conversiones UTC
-      dt.setDate(dt.getDate() - 1);        // RESTAR 1 DIA
-
-      // Formato deseado (puedes cambiar a yyyy-mm-dd o dd/mm/yyyy)
-      const corregida_yyyy_mm_dd =
-        dt.getFullYear() + "-" +
-        String(dt.getMonth() + 1).padStart(2, "0") + "-" +
-        String(dt.getDate()).padStart(2, "0");
-
-      const corregida_dd_mm_yyyy =
-        String(dt.getDate()).padStart(2, "0") + "/" +
-        String(dt.getMonth() + 1).padStart(2, "0") + "/" +
-        dt.getFullYear();
-
-      // Forzar texto para que Excel NO reconvierta la cadena a fecha
-      const celdaTexto = "'" + corregida_yyyy_mm_dd; // el apostrofo NO se muestra en Excel, pero obliga a texto
-
-      // Añadir fila: usar ID y la celda forzada como texto
-      rows.push([String(id), celdaTexto]);
-
-      // DEBUG: mostrar en la consola original -> corregida
-      console.log("Exportar asistencia:", id, "original:", fechaStr, "-> corregida:", corregida_yyyy_mm_dd);
+  Object.keys(pagosObj).forEach(id => {
+    const listaPagos = Array.isArray(pagosObj[id]) ? pagosObj[id] : (pagosObj[id] ? [pagosObj[id]] : []);
+    listaPagos.forEach(pago => {
+      rows.push({
+        alumnoId: id,
+        alumnoNombre: nombrePorId[id] || '',
+        mes: pago.mes || '',
+        monto: pago.monto != null ? Number(pago.monto) : '',
+        estado: pago.estado || '',
+        fecha: pago.fecha || ''
+      });
     });
   });
 
-  if (rows.length === 1) {
-    alert("No hay asistencias para exportar.");
+  if (rows.length === 0) {
+    alert("No hay datos de mensualidades para exportar.");
     return;
   }
 
-  // Usar aoa_to_sheet para respetar los strings tal cual
-  const ws = XLSX.utils.aoa_to_sheet(rows);
+  // Generar hoja Excel
+  const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Asistencias");
+  XLSX.utils.book_append_sheet(wb, ws, "Mensualidades");
 
-  // Descargar
-  XLSX.writeFile(wb, "asistencias_inat.xlsx");
+  // Descargar archivo
+  XLSX.writeFile(wb, "mensualidades_inat.xlsx");
 }

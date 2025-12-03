@@ -445,9 +445,19 @@ function exportAsistenciasExcel() {
 
     Object.keys(asistObj).forEach(id => {
         asistObj[id].forEach(fecha => {
+
+            // Convertir a Date sin UTC
+            let d = new Date(fecha + "T00:00:00");
+            d.setDate(d.getDate() - 1); // <-- RESTAR 1 DÍA
+
+            let corregida =
+                d.getFullYear() + "-" +
+                String(d.getMonth() + 1).padStart(2, "0") + "-" +
+                String(d.getDate()).padStart(2, "0");
+
             lista.push({
                 alumnoId: id,
-                fecha: String(fecha)   // <-- evitar conversión automática a UTC
+                fecha: corregida
             });
         });
     });
